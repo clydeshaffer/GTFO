@@ -11,7 +11,7 @@ void AbstractStateNode::connect(string response, AbstractStateNode* next) {
 }
 
 AbstractStateNode& AbstractStateNode::nextNode(SerialMessage msg) {
-    if(msg.length) {
+    if(msg.shouldWait && msg.length) {
 #ifdef MATCHER_DEBUG        
         char *cur = msg.data;
         while(*cur) {
