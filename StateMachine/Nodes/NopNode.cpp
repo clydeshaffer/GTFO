@@ -2,16 +2,16 @@
 
 #include <stdio.h>
 
-NopNode::NopNode() : _nextNode{*this}, _logString{nullptr} {
+NopNode::NopNode() : _logString{nullptr} {
 }
 
-NopNode::NopNode(AbstractStateNode& nextNode) : _nextNode{nextNode}, _logString{nullptr} {
+NopNode::NopNode(AbstractStateNode& nextNode) : AbstractStateNode(nextNode), _logString{nullptr} {
 }
 
-NopNode::NopNode(char* logString) : _nextNode{*this}, _logString{logString} {
+NopNode::NopNode(char* logString) : _logString{logString} {
 }
 
-NopNode::NopNode(AbstractStateNode& nextNode, char* logString) : _nextNode{nextNode}, _logString{logString} {
+NopNode::NopNode(AbstractStateNode& nextNode, char* logString) : AbstractStateNode(nextNode), _logString{logString} {
 }
 
 SerialMessage NopNode::onEnter() {

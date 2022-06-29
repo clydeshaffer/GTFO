@@ -27,10 +27,15 @@ int main(int argc, char** argv) {
     success.msgTemplate.shouldWait = false;
     fail.msgTemplate.shouldWait = false;
 
-    SendStringNode askVersion(fail, "version\r");
-    askVersion.connect("\nGTCP2-0.0.2\r", &success);
+    SendStringNode eraseChip(fail, "eraseChip\r");
+    eraseChip.msgTemplate.skipLines = 2;
+    eraseChip.msgTemplate.timeoutMs = 30000;
+    eraseChip.connect("\nDone\r", &success);
 
-    NopNode wakeupMsg(askVersion);
+    SendStringNode askVersion(fail, "version\r");
+    askVersion.connect("\nGTCP2-0.0.2\r", &eraseChip);
+
+    NopNode wakeupMsg(askVersion, "wakeupMsg");
     wakeupMsg.msgTemplate.delimiter = '!';
 
     machine.run(wakeupMsg);

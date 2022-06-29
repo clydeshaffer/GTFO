@@ -3,13 +3,12 @@
 
 class NopNode: public AbstractStateNode {
     private:
-        AbstractStateNode& _nextNode;
         char* _logString;
     public:
         NopNode();
         NopNode(AbstractStateNode& next);
         NopNode(char* logString);
         NopNode(AbstractStateNode& next, char* logString);
-        SerialMessage onEnter();
-        AbstractStateNode& nextNode(SerialMessage msg);
+        SerialMessage onEnter() override;
+        AbstractStateNode& nextNode(SerialMessage msg) override;
 };

@@ -2,6 +2,10 @@
 
 using namespace std;
 
+#include <map>
+#include <string>
+#include <stdio.h>
+
 typedef struct SerialMessage {
     char* data;
     unsigned int length;
@@ -10,6 +14,7 @@ typedef struct SerialMessage {
     unsigned int expected_response;
     char delimiter;
     unsigned int skipLines;
+    unsigned long timeoutMs;
     SerialMessage() {
         data = nullptr;
         length = 0;
@@ -18,12 +23,23 @@ typedef struct SerialMessage {
         expected_response = 4096;
         delimiter = '\r';
         skipLines = 0;
+        timeoutMs = 10000;
     }
 } SerialMessage;
 
 class AbstractStateNode {
+    protected:
+        std::map <string, AbstractStateNode*> _links;
+        AbstractStateNode& _nextNode;
+
     public:
-        virtual SerialMessage onEnter() =0;
-        virtual AbstractStateNode& nextNode(SerialMessage msg) =0;
         SerialMessage msgTemplate;
+
+        AbstractStateNode();
+        AbstractStateNode(AbstractStateNode& nextNode);
+        virtual AbstractStateNode& nextNode(SerialMessage msg);
+
+        virtual SerialMessage onEnter();
+        
+        void connect(string response, AbstractStateNode* next);
 };

@@ -17,6 +17,7 @@ void SerialStateMachine::run(AbstractStateNode& start) {
     SerialMessage msg;
     AbstractStateNode* currentNode = &start;
     while(currentNode != _endNode) {
+        printf("running next node\n");
         msg = currentNode->onEnter();
 
         if(msg.length > 0) {
@@ -34,17 +35,18 @@ void SerialStateMachine::run(AbstractStateNode& start) {
                 for(unsigned int i = 0; i < msg.skipLines; i++) {
                     char byte = 0;
                     do {
-                        if(_conn.readChar(&byte, 10000) != 1)
+                        if(_conn.readChar(&byte, msg.timeoutMs) != 1)
                             break;
+                        printf("%c", byte);
                     } while (byte != msg.delimiter);
                 }
-                msg.length = _conn.readString( msg.data, msg.delimiter, msg.expected_response, 10000);
-                printf("got back %d bytes\n", msg.length);
+                msg.length = _conn.readString( msg.data, msg.delimiter, msg.expected_response, msg.timeoutMs);
                 if(msg.length < msg.expected_response) {
-                    printf("Received: %s\n", msg.data);
+                    printf("%s\n", msg.data);
                 }
             } else {
-                msg.length = _conn.readBytes(msg.data, msg.expected_response, 10000, 100);
+                msg.length = _conn.readBytes(msg.data, msg.expected_response, msg.timeoutMs, 100);
+                printf("Received %d raw bytes\n", msg.length);
             }
         }
 
@@ -52,5 +54,6 @@ void SerialStateMachine::run(AbstractStateNode& start) {
         if(msg.data != nullptr) {
             free(msg.data);
         }
+        printf("finished node\n");
     }
 }
