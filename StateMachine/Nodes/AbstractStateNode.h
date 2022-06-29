@@ -16,6 +16,7 @@ typedef struct SerialMessage {
     unsigned int skipLines;
     unsigned long timeoutMs;
     int slice;
+    bool lastItem;
     SerialMessage() {
         data = nullptr;
         length = 0;
@@ -26,6 +27,7 @@ typedef struct SerialMessage {
         skipLines = 0;
         timeoutMs = 10000;
         slice = 0;
+        lastItem = false;
     }
 } SerialMessage;
 

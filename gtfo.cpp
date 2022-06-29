@@ -7,15 +7,33 @@ using namespace std;
 #include "StateMachine/Nodes/NopNode.h"
 #include "StateMachine/Nodes/IncrementingNode.h"
 #include "StateMachine/Nodes/StreamNode.h"
+#include "StateMachine/Nodes/StringListNode.h"
 
 #include <stdio.h>
 #include <fstream>
+#include <string>
 
 #define SERIAL_PORT "COM3"
+
+int checkBankExtension(char* str) {
+    string s(str);
+    s = s.substr(s.length()-7);
+    string s2 = s.substr(0, 5);
+    if(s2.compare(string(".bank")) == 0) {
+        return strtol(s.substr(5).c_str(), nullptr, 16);
+    }
+    return -1;
+}
+
+string getBankNum(char* str) {
+    string s(str);
+    return s.substr(s.length()-2);
+}
 
 int main(int argc, char** argv) {
 
     serialib serial;
+    bool usingBankFiles = false;
 
     char errorOpen = serial.openDevice(SERIAL_PORT, 115200);
 
@@ -23,6 +41,10 @@ int main(int argc, char** argv) {
         printf("need at least one filename");
         return 0;
     }
+
+    if(checkBankExtension(argv[1]) != -1) {
+        usingBankFiles = true;
+    }  
 
     if(errorOpen != 1) {
         printf("Couldn't connect to %s\n", SERIAL_PORT);
@@ -38,19 +60,39 @@ int main(int argc, char** argv) {
     success.msgTemplate.shouldWait = false;
     fail.msgTemplate.shouldWait = false;
 
-    IncrementingNode shifter(success, "shift %x\r", 12);
-    shifter.msgTemplate.skipLines = 0;
-    shifter.params[0].val = 0;
-    shifter.params[0].increment = 1;
-    shifter.count = 129;
-    shifter.msgTemplate.slice = 5;
+    AbstractStateNode* shifter;
+
+    //For full-chip flashing
+    IncrementingNode incShifter(success, "shift %x\r", 12);
+    incShifter.params[0].val = 0;
+    incShifter.params[0].increment = 1;
+    incShifter.count = 129;
+
+    //For partial flashing
+    StringListNode listShifter(success);
 
     StreamNode sendData(success, 4096);
-    ifstream romFile;
-    romFile.open(argv[1], ios::binary);
-    sendData.streams.push_back(&romFile);
-    sendData.it = sendData.streams.begin();
     sendData.msgTemplate.skipLines = 0;
+
+    if(usingBankFiles) {
+        shifter = &listShifter;
+        for(int i = 1; i < argc; i++) {
+            listShifter.cmds.push_back("shift " + getBankNum(argv[i]) + "\r");
+            ifstream* stream = new ifstream();
+            stream->open(argv[i], ios::binary);
+            sendData.streams.push_back(stream);
+        } 
+        listShifter.it = listShifter.cmds.begin();
+    } else {
+        ifstream* romFile = new ifstream();
+        romFile->open(argv[1], ios::binary);
+        sendData.streams.push_back(romFile);
+        shifter = &incShifter;
+    }
+
+    shifter->msgTemplate.skipLines = 0;
+    shifter->msgTemplate.slice = 5;
+    sendData.it = sendData.streams.begin();
 
     IncrementingNode writeMulti(sendData, "writeMulti %x 1000\r", 32);
     writeMulti.msgTemplate.shouldWait = true;
@@ -60,15 +102,15 @@ int main(int argc, char** argv) {
     writeMulti.count = 5;
     writeMulti.loop = true;
 
-    writeMulti.loopLink = &shifter;
+    writeMulti.loopLink = shifter;
     sendData.connect("ACK4096", &writeMulti);
-    shifter.connect("> shi", &writeMulti);
-    shifter.connect("shift", &writeMulti);
+    shifter->connect("> shi", &writeMulti);
+    shifter->connect("shift", &writeMulti);
 
     SendStringNode eraseChip(fail, "eraseChip\r");
     eraseChip.msgTemplate.timeoutMs = 30000;
     eraseChip.msgTemplate.skipLines = 2;
-    eraseChip.connect("Done", &shifter);
+    eraseChip.connect("Done", shifter);
 
     SendStringNode askVersion(fail, "version\r");
     askVersion.connect("GTCP2-0.0.2", &eraseChip);
@@ -80,7 +122,6 @@ int main(int argc, char** argv) {
     machine.run(wakeupMsg);
 
     serial.closeDevice();
-    romFile.close();
 
     return 0;
 }
