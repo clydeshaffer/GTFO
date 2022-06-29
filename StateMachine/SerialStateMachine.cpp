@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <stdio.h>
+#include <typeinfo>
 
 SerialStateMachine::SerialStateMachine(serialib& c) : _conn{c} , _endNode{new NopNode("EXIT")} {
     _endNode->msgTemplate.shouldWait = false;
@@ -17,7 +18,7 @@ void SerialStateMachine::run(AbstractStateNode& start) {
     SerialMessage msg;
     AbstractStateNode* currentNode = &start;
     while(currentNode != _endNode) {
-        printf("running next node\n");
+        printf("running %s\n", typeid(*currentNode).name());
         msg = currentNode->onEnter();
 
         if(msg.length > 0) {
@@ -48,6 +49,7 @@ void SerialStateMachine::run(AbstractStateNode& start) {
                 msg.length = _conn.readBytes(msg.data, msg.expected_response, msg.timeoutMs, 100);
                 printf("Received %d raw bytes\n", msg.length);
             }
+            _conn.flushReceiver();
         }
 
         currentNode = &currentNode->nextNode(msg);

@@ -10,5 +10,4 @@ class NopNode: public AbstractStateNode {
         NopNode(char* logString);
         NopNode(AbstractStateNode& next, char* logString);
         SerialMessage onEnter() override;
-        AbstractStateNode& nextNode(SerialMessage msg) override;
 };

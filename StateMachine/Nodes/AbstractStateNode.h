@@ -15,6 +15,7 @@ typedef struct SerialMessage {
     char delimiter;
     unsigned int skipLines;
     unsigned long timeoutMs;
+    int slice;
     SerialMessage() {
         data = nullptr;
         length = 0;
@@ -24,6 +25,7 @@ typedef struct SerialMessage {
         delimiter = '\r';
         skipLines = 0;
         timeoutMs = 10000;
+        slice = 0;
     }
 } SerialMessage;
 

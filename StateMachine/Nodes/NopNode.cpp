@@ -21,7 +21,3 @@ SerialMessage NopNode::onEnter() {
     }
     return newMessage;
 }
-
-AbstractStateNode& NopNode::nextNode(SerialMessage msg) {
-    return _nextNode;
-}

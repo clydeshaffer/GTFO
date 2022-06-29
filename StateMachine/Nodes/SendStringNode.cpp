@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 SendStringNode::SendStringNode(AbstractStateNode& nextNode, char* cmd) : AbstractStateNode(nextNode), _cmdString{cmd} {
-    msgTemplate.skipLines = 2;
+    msgTemplate.skipLines = 1;
 }
 
 SerialMessage SendStringNode::onEnter() {
