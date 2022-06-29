@@ -4,9 +4,8 @@
 #include <cstdlib>
 #include <stdio.h>
 
-StringListNode::StringListNode(AbstractStateNode& nextNode, char* fmt, int length) : AbstractStateNode(nextNode), _fmtString{fmt} {
+StringListNode::StringListNode(AbstractStateNode& nextNode) : AbstractStateNode(nextNode) {
     msgTemplate.skipLines = 1;
-    msgTemplate.length = length;
 }
 
 SerialMessage StringListNode::onEnter() {

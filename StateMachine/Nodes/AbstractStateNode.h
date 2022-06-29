@@ -36,6 +36,7 @@ class AbstractStateNode {
 
     public:
         SerialMessage msgTemplate;
+        bool ranOnce = false;
 
         AbstractStateNode();
         AbstractStateNode(AbstractStateNode& nextNode);

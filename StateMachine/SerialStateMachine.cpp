@@ -25,7 +25,9 @@ void SerialStateMachine::run(AbstractStateNode& start) {
             _conn.writeBytes(msg.data, msg.length);
         }
 
+
         if(msg.data != nullptr) {
+            _conn.flushReceiver();
             free(msg.data);
             msg.data = nullptr;
         }
@@ -49,9 +51,9 @@ void SerialStateMachine::run(AbstractStateNode& start) {
                 msg.length = _conn.readBytes(msg.data, msg.expected_response, msg.timeoutMs, 100);
                 printf("Received %d raw bytes\n", msg.length);
             }
-            _conn.flushReceiver();
         }
 
+        currentNode->ranOnce = true;
         currentNode = &currentNode->nextNode(msg);
         if(msg.data != nullptr) {
             free(msg.data);

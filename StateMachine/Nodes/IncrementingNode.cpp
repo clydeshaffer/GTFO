@@ -11,6 +11,14 @@ IncrementingNode::IncrementingNode(AbstractStateNode& nextNode, char* fmt, int l
 
 SerialMessage IncrementingNode::onEnter() {
     SerialMessage newMessage = msgTemplate;
+
+    if(loop && !ranOnce) {
+        _startCount = count;
+        for(int i = 0; i < INCREMENTER_MAX_PARAMS; i++) {
+            params[i]._initial = params[i].val;
+        }
+    }
+
     if(newMessage.length && count) {
         newMessage.data = (char*) calloc(newMessage.length, sizeof(char));
         sprintf(newMessage.data, _fmtString, 
@@ -22,14 +30,36 @@ SerialMessage IncrementingNode::onEnter() {
             params[5].val);
         count--;
     }
-    for(int i = 0; i < INCREMENTER_MAX_PARAMS; i++) {
-        params[i].val += params[i].increment;
+    if(!count) {
+        if(loop) {
+            count = _startCount;
+            _didLoop = true;
+            for(int i = 0; i < INCREMENTER_MAX_PARAMS; i++) {
+                params[i].val = params[i]._initial;
+            }
+            newMessage.length = 0;
+            newMessage.shouldWait = false;
+        }
+    } else {
+        for(int i = 0; i < INCREMENTER_MAX_PARAMS; i++) {
+            params[i].val += params[i].increment;
+        }
     }
+
+    if(!newMessage.shouldWait && newMessage.length) {
+        printf("SENDING %s\n", newMessage.data);
+    }
+
     return newMessage;
 }
 
 AbstractStateNode& IncrementingNode::nextNode(SerialMessage msg) {
     if(count) {
+        if(_didLoop) {
+            _didLoop = false;
+            if(loopLink != nullptr)
+                return *loopLink;
+        }
         return AbstractStateNode::nextNode(msg);
     } else {
         return _nextNode;
