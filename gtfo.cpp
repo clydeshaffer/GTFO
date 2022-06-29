@@ -24,8 +24,6 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    printf("%d files given\n", argc-1);
-
     if(errorOpen != 1) {
         printf("Couldn't connect to %s\n", SERIAL_PORT);
         return errorOpen;
@@ -44,7 +42,7 @@ int main(int argc, char** argv) {
     shifter.msgTemplate.skipLines = 0;
     shifter.params[0].val = 0;
     shifter.params[0].increment = 1;
-    shifter.count = 8;
+    shifter.count = 129;
     shifter.msgTemplate.slice = 5;
 
     StreamNode sendData(success, 4096);
@@ -55,7 +53,8 @@ int main(int argc, char** argv) {
     sendData.msgTemplate.skipLines = 0;
 
     IncrementingNode writeMulti(sendData, "writeMulti %x 1000\r", 32);
-    writeMulti.msgTemplate.shouldWait = false;
+    writeMulti.msgTemplate.shouldWait = true;
+    writeMulti.msgTemplate.skipLines = 0;
     writeMulti.params[0].val = 0;
     writeMulti.params[0].increment = 4096;
     writeMulti.count = 5;
@@ -63,6 +62,7 @@ int main(int argc, char** argv) {
 
     writeMulti.loopLink = &shifter;
     sendData.connect("ACK4096", &writeMulti);
+    shifter.connect("> shi", &writeMulti);
     shifter.connect("shift", &writeMulti);
 
     SendStringNode eraseChip(fail, "eraseChip\r");
@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
     eraseChip.connect("Done", &shifter);
 
     SendStringNode askVersion(fail, "version\r");
-    askVersion.connect("GTCP2-0.0.2", &shifter);
+    askVersion.connect("GTCP2-0.0.2", &eraseChip);
+    askVersion.msgTemplate.skipLines = 2;
 
     NopNode wakeupMsg(askVersion, "wakeupMsg");
     wakeupMsg.msgTemplate.delimiter = '!';

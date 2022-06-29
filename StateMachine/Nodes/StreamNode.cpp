@@ -20,7 +20,6 @@ SerialMessage StreamNode::onEnter() {
                 ++it;
             }
         } while((newMessage.length == 0) && it!=streams.end());
-
     }
     return newMessage;
 }

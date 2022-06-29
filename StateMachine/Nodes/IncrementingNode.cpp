@@ -21,7 +21,7 @@ SerialMessage IncrementingNode::onEnter() {
 
     if(newMessage.length && count) {
         newMessage.data = (char*) calloc(newMessage.length, sizeof(char));
-        sprintf(newMessage.data, _fmtString, 
+        newMessage.length = sprintf(newMessage.data, _fmtString, 
             params[0].val,
             params[1].val,
             params[2].val,

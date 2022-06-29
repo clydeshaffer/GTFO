@@ -18,7 +18,8 @@ void SerialStateMachine::run(AbstractStateNode& start) {
     SerialMessage msg;
     AbstractStateNode* currentNode = &start;
     while(currentNode != _endNode) {
-        printf("running %s\n", typeid(*currentNode).name());
+        //Add verbose flag?
+        //printf("running %s\n", typeid(*currentNode).name());
         msg = currentNode->onEnter();
 
         if(msg.length > 0) {
@@ -27,7 +28,6 @@ void SerialStateMachine::run(AbstractStateNode& start) {
 
 
         if(msg.data != nullptr) {
-            _conn.flushReceiver();
             free(msg.data);
             msg.data = nullptr;
         }
@@ -58,6 +58,5 @@ void SerialStateMachine::run(AbstractStateNode& start) {
         if(msg.data != nullptr) {
             free(msg.data);
         }
-        printf("finished node\n");
     }
 }

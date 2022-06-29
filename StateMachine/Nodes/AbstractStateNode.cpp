@@ -18,8 +18,6 @@ std::string trim(const std::string &s) {
     return rtrim(ltrim(s));
 }
 
-
-
 AbstractStateNode::AbstractStateNode() : _nextNode{*this} {
 }
 
