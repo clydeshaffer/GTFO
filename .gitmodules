@@ -1,0 +1,3 @@
+[submodule "lib/serialib"]
+	path = lib/serialib
+	url = https://github.com/imabot2/serialib.git
