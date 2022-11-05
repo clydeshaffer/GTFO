@@ -1,6 +1,8 @@
 using namespace std;
 
-#include "serialib.h"
+#include "lib/cxxopts/include/cxxopts.hpp"
+
+#include "lib/serialib/lib/serialib.h"
 #include "StateMachine/SerialStateMachine.h"
 
 #include "StateMachine/Nodes/SendStringNode.h"
@@ -13,9 +15,9 @@ using namespace std;
 #include <fstream>
 #include <string>
 
-#define SERIAL_PORT "COM3"
+#define SERIAL_PORT "/dev/ttyACM0"
 
-int checkBankExtension(char* str) {
+int checkBankExtension(const char* str) {
     string s(str);
     s = s.substr(s.length()-7);
     string s2 = s.substr(0, 5);
@@ -25,7 +27,7 @@ int checkBankExtension(char* str) {
     return -1;
 }
 
-string getBankNum(char* str) {
+string getBankNum(const char* str) {
     string s(str);
     return s.substr(s.length()-2);
 }
@@ -35,19 +37,27 @@ int main(int argc, char** argv) {
     serialib serial;
     bool usingBankFiles = false;
 
-    char errorOpen = serial.openDevice(SERIAL_PORT, 115200);
+    cxxopts::Options options("GTFO", "GameTank Flashing Overhauled");
+    options.add_options()
+        ("filenames", "The filename(s) to process", cxxopts::value<std::vector<string>>())
+        ("p", "Serial port", cxxopts::value<string>()->default_value(SERIAL_PORT));
+    options.parse_positional({"filenames"});
+    auto cmdLineResults = options.parse(argc, argv);
+    char errorOpen = serial.openDevice(cmdLineResults["p"].as<string>().c_str(), 115200);
 
-    if(argc < 2) {
+    if(cmdLineResults.count("filenames") < 1) {
         printf("need at least one filename");
         return 0;
     }
 
-    if(checkBankExtension(argv[1]) != -1) {
+    auto filenames = cmdLineResults["filenames"].as<vector<string>>();
+
+    if(checkBankExtension(filenames.front().c_str()) != -1) {
         usingBankFiles = true;
     }  
 
     if(errorOpen != 1) {
-        printf("Couldn't connect to %s\n", SERIAL_PORT);
+        printf("Couldn't connect to %s\n", cmdLineResults["p"].as<string>().c_str());
         return errorOpen;
     }
 
@@ -76,16 +86,16 @@ int main(int argc, char** argv) {
 
     if(usingBankFiles) {
         shifter = &listShifter;
-        for(int i = 1; i < argc; i++) {
-            listShifter.cmds.push_back("shift " + getBankNum(argv[i]) + "\r");
+        for(vector<string>::iterator fname = filenames.begin(); fname != filenames.end(); ++fname) {
+            listShifter.cmds.push_back("shift " + getBankNum(fname->c_str()) + "\r");
             ifstream* stream = new ifstream();
-            stream->open(argv[i], ios::binary);
+            stream->open(fname->c_str(), ios::binary);
             sendData.streams.push_back(stream);
         } 
         listShifter.it = listShifter.cmds.begin();
     } else {
         ifstream* romFile = new ifstream();
-        romFile->open(argv[1], ios::binary);
+        romFile->open(filenames.front().c_str(), ios::binary);
         sendData.streams.push_back(romFile);
         shifter = &incShifter;
     }

@@ -1,7 +1,7 @@
 #pragma once
 using namespace std;
 
-#include "serialib.h"
+#include "../lib/serialib/lib/serialib.h"
 #include "Nodes/AbstractStateNode.h"
 #include "Nodes/NopNode.h"
 
