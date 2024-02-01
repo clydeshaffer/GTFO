@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         return errorOpen;
     }
 
-    printf("Connected to %s\n", SERIAL_PORT);
+    printf("Connected to %s\n", cmdLineResults["p"].as<string>().c_str());
 
     SerialStateMachine machine(serial);
 

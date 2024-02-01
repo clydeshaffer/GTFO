@@ -14,6 +14,13 @@ AbstractStateNode& SerialStateMachine::endNode() {
     return *_endNode;
 }
 
+int throwIfNegative(int x) {
+    if(x < 0) {
+        throw std::range_error("invalid number of bytes read");
+    }
+    return x;
+}
+
 void SerialStateMachine::run(AbstractStateNode& start) {
     SerialMessage msg;
     AbstractStateNode* currentNode = &start;
@@ -43,12 +50,12 @@ void SerialStateMachine::run(AbstractStateNode& start) {
                         printf("%c", byte);
                     } while (byte != msg.delimiter);
                 }
-                msg.length = _conn.readString( msg.data, msg.delimiter, msg.expected_response, msg.timeoutMs);
+                msg.length = throwIfNegative(_conn.readString( msg.data, msg.delimiter, msg.expected_response, msg.timeoutMs));
                 if(msg.length < msg.expected_response) {
                     printf("%s\n", msg.data);
                 }
             } else {
-                msg.length = _conn.readBytes(msg.data, msg.expected_response, msg.timeoutMs, 100);
+                msg.length = throwIfNegative(_conn.readBytes(msg.data, msg.expected_response, msg.timeoutMs, 100));
                 printf("Received %d raw bytes\n", msg.length);
             }
         }

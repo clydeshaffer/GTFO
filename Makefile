@@ -24,7 +24,7 @@ ifeq ($(OS), Windows_NT)
 	#LINKER_FLAGS specifies the libraries we're linking against
 	LINKER_FLAGS = -lmingw32 -Wl,-Bstatic -mwindows -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lcomdlg32 -lole32 -loleaut32 -lshell32 -lversion -luuid -static-libgcc -lsetupapi
 else
-	COMPILER_FLAGS = -w
+	COMPILER_FLAGS = -w -g
 	LINKER_FLAGS = -lSDL2
 	ifeq ($(OS), wasm)
 		CC = emcc
