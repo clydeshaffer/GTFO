@@ -12,7 +12,7 @@ ifeq ($(OS), Windows_NT)
 	INCLUDE_PATHS = -I lib/serialib/lib
 
 	#LIBRARY_PATHS specifies the additional library paths we'll need
-	LIBRARY_PATHS = -L$(SDL_ROOT)/lib
+	LIBRARY_PATHS =
 
 	#COMPILER_FLAGS specifies the additional compilation options we're using
 	# -w suppresses all warnings
@@ -25,11 +25,11 @@ ifeq ($(OS), Windows_NT)
 	LINKER_FLAGS = -lmingw32 -Wl,-Bstatic -mwindows -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lcomdlg32 -lole32 -loleaut32 -lshell32 -lversion -luuid -static-libgcc -lsetupapi
 else
 	COMPILER_FLAGS = -w -g
-	LINKER_FLAGS = -lSDL2
+	LINKER_FLAGS =
 	ifeq ($(OS), wasm)
 		CC = emcc
 		CPPC = emcc
-		COMPILER_FLAGS += -s USE_SDL=2 -D WASM_BUILD -D EMBED_ROM_FILE='"$(ROMFILE)"'
+		COMPILER_FLAGS += -s -D WASM_BUILD -D EMBED_ROM_FILE='"$(ROMFILE)"'
 		OBJ_NAME = bin/$(OS)/index.html
 		LINKER_FLAGS += --embed-file $(ROMFILE) --shell-file web/shell.html -s EXPORTED_FUNCTIONS='["_LoadRomFile", "_main", "_SetButtons"]' -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]'
 	endif
