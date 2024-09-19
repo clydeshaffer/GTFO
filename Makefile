@@ -18,7 +18,7 @@ ifeq ($(OS), Windows_NT)
 	# -w suppresses all warnings
 	# -Wl,-subsystem,windows gets rid of the console window
 	# change subsystem,windows to subsystem,console to get printfs on command line
-	COMPILER_FLAGS = -w -Wl,-subsystem,console
+	COMPILER_FLAGS = -w -Wl,-subsystem,console -std=c++11
 	DEFINES = -D _WIN32
 
 	#LINKER_FLAGS specifies the libraries we're linking against

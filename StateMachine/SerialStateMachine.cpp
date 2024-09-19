@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <typeinfo>
+#include <stdexcept>
 
 SerialStateMachine::SerialStateMachine(serialib& c) : _conn{c} , _endNode{new NopNode("EXIT")} {
     _endNode->msgTemplate.shouldWait = false;
