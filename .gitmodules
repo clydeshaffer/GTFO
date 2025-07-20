@@ -1,6 +1,6 @@
 [submodule "lib/serialib"]
 	path = lib/serialib
-	url = https://github.com/imabot2/serialib.git
+	url = https://github.com/clydeshaffer/serialib.git
 [submodule "lib/cxxopts"]
 	path = lib/cxxopts
 	url = https://github.com/jarro2783/cxxopts.git

@@ -30,8 +30,11 @@ void SerialStateMachine::run(AbstractStateNode& start) {
         //printf("running %s\n", typeid(*currentNode).name());
         msg = currentNode->onEnter();
 
-        if(msg.length > 0) {
-            _conn.writeBytes(msg.data, msg.length);
+        unsigned int totalWrittenBytes = 0;
+        unsigned int lastWrittenBytes = 0;
+        while((msg.length > 0) && (totalWrittenBytes < msg.length)) {
+            _conn.writeBytes(msg.data+totalWrittenBytes, msg.length - totalWrittenBytes, &lastWrittenBytes);
+            totalWrittenBytes += lastWrittenBytes;
         }
 
 
